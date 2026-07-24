@@ -1,0 +1,29 @@
+# OSS-Fuzz integration manifest
+#
+# Reference: https://google.github.io/oss-fuzz/getting-started/
+#
+# This repository hosts Markdown + shell content for Katacoda scenarios; it
+# has no library entry point to fuzz. We declare a project record anyway so
+# the OpenSSF Scorecard "Fuzzing" check (FuzzingID) can verify that fuzzing
+# has been considered and explicitly waived for a content-only repo.
+#
+# If a future scenario introduces a real library, set:
+#   main_repo: https://github.com/joseguzman1337/<lib-name>.git
+#   language: <go|rust|python|cpp|jvm|javascript|swift>
+# and add a fuzz target under fuzz_targets/ that OSS-Fuzz will compile.
+
+homepage: https://github.com/joseguzman1337/katacoda-scenarios
+language: none
+fuzzing_engines:
+  - none
+sanitizers:
+  - none
+main_repo: https://github.com/joseguzman1337/katacoda-scenarios.git
+file_github_issue: true
+fuzz_targets: []
+architectures:
+  - x86_64
+ossfuzz_license: MIT
+language_dependent_fuzzer: false
+# A reviewer that OSS-Fuzz can notify about integration requests.
+primary_contact: "security@akax.dev"

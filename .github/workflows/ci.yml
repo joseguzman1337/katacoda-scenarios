@@ -1,0 +1,91 @@
+name: CI
+
+# Runs lint + content validation on every push and pull request.
+# This addresses the OpenSSF Scorecard "SAST" (SASTID) and "Code-Review"
+# (CodeReviewID) checks by demonstrating that every change is exercised by
+# an automated pipeline before it can land on `main`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Lint markdown scenarios
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@0f5f5352852a284e9e4a309244d6e5e1528a20e0 # v19.1.0
+        with:
+          globs: |
+            **/*.md
+
+  shellcheck:
+    name: Lint shell snippets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Run shellcheck
+        uses: ludeeus/action-shellcheck@1d52cff0d3575a38d8ac88d4e15e95a93d0c20d2 # v2.0.0
+        with:
+          scandir: "./"
+          additional_files: "*.sh"
+
+  scorecard-publish:
+    name: Re-publish Scorecard on every PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@4187e74d05793876e9989daffde9c3e66b4acd07 # v3.37.3
+        with:
+          sarif_file: results.sarif

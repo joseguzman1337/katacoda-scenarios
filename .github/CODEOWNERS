@@ -1,0 +1,11 @@
+# CODEOWNERS — required for branch-protection `require_code_owner_reviews`.
+# Every change touching the listed paths must be reviewed by an owner.
+# The OpenSSF Scorecard "Code-Review" check (CodeReviewID) and the
+# "Branch-Protection" check (BranchProtectionID) both require this.
+
+*       @joseguzman1337
+
+/.github/    @joseguzman1337
+/SECURITY.md @joseguzman1337
+/LICENSE     @joseguzman1337
+/README.md   @joseguzman1337
